@@ -305,13 +305,17 @@ Netzke.cache.push('#{js_xtype}');
     # to the constructor of our JavaScript class. Override it when you want to pass any extra configuration
     # to the JavaScript side.
     def js_config
+    	debug_log "******** my code ****"
       {}.tap do |res|
         # Unique id of the component
         res[:id] = global_id
 
         # Non-lazy-loaded components
         comp_hash = {}
-        eager_loaded_components.each_pair do |comp_name, comp_config|
+        item_names = items.blank? ? [] : items.collect{|item| item.values.first}
+        item_names += [:unload_component_plugin]
+        new_comps = eager_loaded_components.select{|x, y| debug_log x; item_names.include?(x.to_sym)}
+        new_comps.each_pair do |comp_name, comp_config|
           comp_instance = component_instance(comp_name.to_sym)
           comp_instance.before_load
           comp_hash[comp_name] = comp_instance.js_config
