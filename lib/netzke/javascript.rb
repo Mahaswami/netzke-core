@@ -312,7 +312,7 @@ Netzke.cache.push('#{js_xtype}');
         # Non-lazy-loaded components
         comp_hash = {}
         item_names = items.blank? ? [] : items.collect{|item| item.values.first}
-        item_names += plugins.map{ |p| p.to_s.camelcase(:lower) } if plugins.present?
+        item_names += plugins if plugins.present?
         instance_components = eager_loaded_components.select{|comp_name, comp_config| item_names.include?(comp_name.to_sym)}
         instance_components.each_pair do |comp_name, comp_config|
           comp_instance = component_instance(comp_name.to_sym)
