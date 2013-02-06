@@ -301,6 +301,21 @@ Netzke.cache.push('#{js_xtype}');
 
     end
 
+    # Fetches the deep level component names from the
+    # items of the component...
+    def instance_component_names(items_local)
+      items_local.inject([]){|r, i|
+        if i.is_a?(Hash)
+          if i[:netzke_component]
+            r << i[:netzke_component]
+          elsif i[:items]
+            r += instance_component_names i[:items]
+          end
+        end
+        r
+      }
+    end
+
     # The result of this method (a hash) is converted to a JSON object and passed as options
     # to the constructor of our JavaScript class. Override it when you want to pass any extra configuration
     # to the JavaScript side.
@@ -311,7 +326,7 @@ Netzke.cache.push('#{js_xtype}');
 
         # Non-lazy-loaded components
         comp_hash = {}
-        item_names = items.blank? ? [] : items.collect{|item| item.values.first}
+        item_names = items.blank? ? [] : instance_component_names(items)
         item_names += plugins if plugins.present?
         instance_components = eager_loaded_components.select{|comp_name, comp_config| item_names.include?(comp_name.to_sym)}
         instance_components.each_pair do |comp_name, comp_config|
