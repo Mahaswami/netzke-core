@@ -108,6 +108,23 @@ module Netzke
       @components ||= self.class.registered_components.inject({}){ |res, name| res.merge(name.to_sym => send(COMPONENT_METHOD_NAME % name)) }.merge(config[:components] || {})
     end
 
+
+    # Fetches the deep level component names from the
+    # items of the component...
+    def instance_component_names(items_local)
+      items_local.inject([]){|r, i|
+        if i.is_a?(Hash)
+          if i[:netzke_component]
+            r << i[:netzke_component]
+          elsif i[:items]
+            r += instance_component_names i[:items]
+          end
+        end
+        r
+      }
+    end
+
+
     def eager_loaded_components
       components.reject{|k,v| v[:lazy_loading]}
     end
@@ -161,7 +178,12 @@ module Netzke
     def dependency_classes
       res = []
 
-      eager_loaded_components.keys.each do |aggr|
+      item_names = items.blank? ? [] : instance_component_names(items)
+      debug_log "#{self.class.name}: #{item_names.inspect}"
+      item_names += plugins if plugins.present?
+      instance_components = eager_loaded_components.select{|comp_name, comp_config| item_names.include?(comp_name.to_sym)}
+
+      instance_components.keys.each do |aggr|
         res += component_instance(aggr).dependency_classes
       end
 
