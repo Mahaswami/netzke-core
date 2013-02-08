@@ -179,7 +179,6 @@ module Netzke
       res = []
 
       item_names = items.blank? ? [] : instance_component_names(items)
-      debug_log "#{self.class.name}: #{item_names.inspect}"
       item_names += plugins if plugins.present?
       instance_components = eager_loaded_components.select{|comp_name, comp_config| item_names.include?(comp_name.to_sym)}
 
