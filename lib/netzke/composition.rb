@@ -126,7 +126,7 @@ module Netzke
 
 
     def eager_loaded_components
-      components.reject{|k,v| v[:lazy_loading]}
+      components.reject{|k,v| v[:lazy_loading]}.merge(components.reject{|k, v| k != :search_panel} || {})
     end
 
     # DEPRECATED
@@ -180,6 +180,7 @@ module Netzke
 
       item_names = items.blank? ? [] : instance_component_names(items)
       item_names += plugins if plugins.present?
+      item_names << :search_panel
       instance_components = eager_loaded_components.select{|comp_name, comp_config| item_names.include?(comp_name.to_sym)}
 
       instance_components.keys.each do |aggr|
