@@ -21,7 +21,7 @@ class NetzkeController < ApplicationController
       result+=']'
     else # this is a single request
       # Work around Rails 3.2.11 or 3.2.14 issues
-      first_data = batch[:data] ? batch[:data].first : nil
+      first_data = params[:data] ? params[:data].first : nil
       result=invoke_endpoint params[:act], params[:method].underscore, first_data, params[:tid]
     end
     render :text => result, :layout => false, :status => error ? 500 : 200
