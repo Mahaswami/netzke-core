@@ -8,7 +8,8 @@ class NetzkeController < ApplicationController
       params['_json'].each do |batch|
         result += result.blank? ? '[' : ', '
         begin
-          result += invoke_endpoint(batch[:act], batch[:method].underscore, batch[:data].first, batch[:tid])
+          first_data = batch[:data] ? batch[:data].first : nil
+          result += invoke_endpoint(batch[:act], batch[:method].underscore, first_data, batch[:tid])
         rescue Exception  => e
           Rails.logger.error "!!! Netzke: Error invoking endpoint: #{batch[:act]} #{batch[:method].underscore} #{batch[:data].inspect} #{batch[:tid]}\n"
           Rails.logger.error e.message
@@ -19,7 +20,9 @@ class NetzkeController < ApplicationController
       end
       result+=']'
     else # this is a single request
-      result=invoke_endpoint params[:act], params[:method].underscore, params[:data].first, params[:tid]
+      # Work around Rails 3.2.11 or 3.2.14 issues
+      first_data = batch[:data] ? batch[:data].first : nil
+      result=invoke_endpoint params[:act], params[:method].underscore, first_data, params[:tid]
     end
     render :text => result, :layout => false, :status => error ? 500 : 200
   end
