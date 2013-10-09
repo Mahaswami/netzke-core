@@ -67,7 +67,7 @@ Netzke.aliasMethodChain = function(klass, method, feature) {
 Netzke.cache = [];
 
 Netzke.componentNotInSessionHandler = function() {
-	window.location = window.location.protocol + "//" + window.location.host;
+	window.location.reload();
   //throw "Netzke: component not in Rails session. Define Netzke.componentNotInSessionHandler to handle this.";
 };
 
