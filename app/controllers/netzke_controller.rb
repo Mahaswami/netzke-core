@@ -38,7 +38,6 @@ class NetzkeController < ApplicationController
                      formatted_url
                    end
         NewRelic::Agent.set_transaction_name txn_name
-        # Work around Rails 3.2.11 or 3.2.14 issues
         result =  _invoke_endpoint params
       end
        render :text => result, :layout => false, :status => error ? 500 : 200
@@ -52,6 +51,7 @@ class NetzkeController < ApplicationController
     end
 
     def _invoke_endpoint(request)
+      # Work around Rails 3.2.11 or 3.2.14 issues
        first_data = request[:data] ? request[:data].first : nil
        invoke_endpoint(request[:act], request[:method].underscore, first_data, request[:tid])
      end
@@ -69,8 +69,7 @@ class NetzkeController < ApplicationController
                    formatted_url
                  end
       NewRelic::Agent.set_transaction_name txn_name
-      first_data = batch[:data] ? batch[:data].first : nil
-      invoke_endpoint(batch[:act], batch[:method].underscore, first_data, batch[:tid])
+      _invoke_endpoint batch
     end
 
     add_transaction_tracer :invoke_endpoint_and_do_nr
