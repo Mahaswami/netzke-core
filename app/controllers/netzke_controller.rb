@@ -1,31 +1,79 @@
 class NetzkeController < ApplicationController
 
   # Action for Ext.Direct RPC calls
-  def direct
-    result=""
-    error=false
-    if params['_json'] # this is a batched request
-      params['_json'].each do |batch|
-        result += result.blank? ? '[' : ', '
-        begin
-          first_data = batch[:data] ? batch[:data].first : nil
-          result += invoke_endpoint(batch[:act], batch[:method].underscore, first_data, batch[:tid])
-        rescue Exception  => e
-          Rails.logger.error "!!! Netzke: Error invoking endpoint: #{batch[:act]} #{batch[:method].underscore} #{batch[:data].inspect} #{batch[:tid]}\n"
-          Rails.logger.error e.message
-          Rails.logger.error e.backtrace.join("\n")
-          error=true
-          break;
+    include NewRelic::Agent::Instrumentation::ControllerInstrumentation
+
+    def direct
+      result=""
+      error=false
+      if params['_json'] # this is a batched request
+        txn_name = if agency.present?
+                     "#{agency}/batch_request"
+                   else
+                     "batch_request"
+                   end
+        NewRelic::Agent.set_transaction_name txn_name
+        params['_json'].each do |batch|
+          result += result.blank? ? '[' : ', '
+          begin
+            result += invoke_endpoint_and_do_nr(batch)
+          rescue Exception  => e
+            Rails.logger.error "!!! Netzke: Error invoking endpoint: #{batch[:act]} #{batch[:method].underscore} #{batch[:data].inspect} #{batch[:tid]}\n"
+            Rails.logger.error e.message
+            Rails.logger.error e.backtrace.join("\n")
+            error=true
+            break;
+          end
         end
+        result+=']'
+      else # this is a single request
+        formatted_url = if params[:method] == "deliverComponent"
+                          "#{params[:act]}/deliver_#{params[:data][0][:name]}"
+                        else
+                          "#{params[:act]}/#{params[:method]}"
+                        end
+        txn_name = if agency.present?
+                     "#{agency}/#{formatted_url}"
+                   else
+                     formatted_url
+                   end
+        NewRelic::Agent.set_transaction_name txn_name
+        # Work around Rails 3.2.11 or 3.2.14 issues
+        result =  _invoke_endpoint params
       end
-      result+=']'
-    else # this is a single request
-      # Work around Rails 3.2.11 or 3.2.14 issues
-      first_data = params[:data] ? params[:data].first : nil
-      result=invoke_endpoint params[:act], params[:method].underscore, first_data, params[:tid]
+       render :text => result, :layout => false, :status => error ? 500 : 200
     end
-    render :text => result, :layout => false, :status => error ? 500 : 200
-  end
+
+
+    def agency
+      if User.current.office_staff?
+         User.current.orgs.first.to_s[0..2]
+       end
+    end
+
+    def _invoke_endpoint(request)
+       first_data = request[:data] ? request[:data].first : nil
+       invoke_endpoint(request[:act], request[:method].underscore, first_data, request[:tid])
+     end
+
+
+    def invoke_endpoint_and_do_nr(batch)
+      formatted_url = if batch[:method] == "deliverComponent"
+                        "#{batch[:act]}/deliver_#{batch[:data][0][:name]}"
+                      else
+                        "#{batch[:act]}/#{batch[:method]}"
+                      end
+      txn_name = if agency.present?
+                   "#{agency}/#{formatted_url}"
+                 else
+                   formatted_url
+                 end
+      NewRelic::Agent.set_transaction_name txn_name
+      first_data = batch[:data] ? batch[:data].first : nil
+      invoke_endpoint(batch[:act], batch[:method].underscore, first_data, batch[:tid])
+    end
+
+    add_transaction_tracer :invoke_endpoint_and_do_nr
 
   # Action used by non-Ext.Direct (Touch) components
   def dispatcher
