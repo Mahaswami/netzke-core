@@ -45,9 +45,9 @@ class NetzkeController < ApplicationController
 
 
     def agency
-      if User.current.office_staff?
-         User.current.orgs.first.to_s[0..2]
-       end
+      if (User.current and User.current.office_staff?)
+           User.current.orgs.first.to_s[0..2]
+      end
     end
 
     def _invoke_endpoint(request)
