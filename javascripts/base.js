@@ -31,7 +31,18 @@ if( Netzke.nLoadingFixRequests == undefined ){
   Netzke.nLoadingFixRequests=0;
   Ext.Ajax.on('beforerequest',    function(conn,opt) { Netzke.nLoadingFixRequests+=1; });
   Ext.Ajax.on('requestcomplete',  function(conn,opt) { Netzke.nLoadingFixRequests-=1; });
-  Ext.Ajax.on('requestexception', function(conn,opt) { Netzke.nLoadingFixRequests-=1; });
+  Ext.Ajax.on('requestexception', function(conn,opt) {
+        console.log("Exception");
+        var exception = Ext.Msg.show({
+            title: "We are sorry",
+            msg: "This operation could not be completed. Please try again.<br/>If unsuccessful please contact customer support.<br/>Thank you.$
+            icon: Ext.Msg.ERROR,
+            buttons: Ext.Msg.OK,
+            });
+        exception.setPosition(400, 40);
+
+        Netzke.nLoadingFixRequests-=1;
+ });
   Netzke.ajaxIsLoading = function() { return Netzke.nLoadingFixRequests > 0; };
 }
 
