@@ -35,7 +35,7 @@ if( Netzke.nLoadingFixRequests == undefined ){
         console.log("Exception");
         var exception = Ext.Msg.show({
             title: "We are sorry",
-            msg: "This operation could not be completed. Please try again.<br/>If unsuccessful please contact customer support.<br/>Thank you.$
+            msg: "This operation could not be completed. Please try again.<br/>If unsuccessful please contact customer support.<br/>Thank you.",
             icon: Ext.Msg.ERROR,
             buttons: Ext.Msg.OK,
             });
