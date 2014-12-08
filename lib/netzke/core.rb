@@ -52,10 +52,10 @@ module Netzke
     @@external_ext_css = []
 
     mattr_accessor :icons_uri
-    @@icons_uri = "/images/icons"
+    @@icons_uri = "/assets/icons"
 
     mattr_accessor :ext_uri
-    @@ext_uri = "/extjs"
+    @@ext_uri = "/assets"
 
     mattr_accessor :ext_path
 

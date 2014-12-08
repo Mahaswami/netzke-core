@@ -30,6 +30,12 @@ module Netzke
       def netzke(name, config = {})
         @rendered_classes ||= []
 
+
+        @rendered_classes1 = ['netzkeplugin', 'unloadcomponentplugin', 'netzkebasepackpanel', 'mahaswamipanel',
+                              'patientslistfilter', 'patientslistbuttons', 'netzkebasepackgridpanel', 'mahaswamigridpanel',
+                              'episodeslist', 'episodeslistexplorer', 'netzkebasepacksimpleapp']
+
+
         # If we are the first netzke call on the page, reset components hash in the session.
         # WON'T WORK, because it breaks the browser "back" button
         # if @rendered_classes.empty?
@@ -46,9 +52,9 @@ module Netzke
         cmp = Netzke::Base.instance_by_config(config)
         cmp.before_load # inform the component about initial load
 
-        content_for :netzke_js_classes, raw(cmp.js_missing_code(@rendered_classes))
+        content_for :netzke_js_classes, raw(cmp.js_missing_code(@rendered_classes + @rendered_classes1 ))
 
-        content_for :netzke_css, raw(cmp.css_missing_code(@rendered_classes))
+        content_for :netzke_css, raw(cmp.css_missing_code(@rendered_classes + @rendered_classes1 ))
 
         content_for :netzke_on_ready, raw("#{cmp.js_component_instance}\n\n#{cmp.js_component_render}")
 
