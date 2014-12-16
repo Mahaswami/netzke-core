@@ -26,6 +26,8 @@ module Netzke
     # Use Ext 3 compatibility layer
     mattr_accessor :ext3_compat_uri
 
+    ASSETS = Rails.application.config.assets.extjs_assets_enabled.blank? #Checking Assets enabled or not
+
     # Configuration specified at the initialization times (set in the Engine in case of Rails)
     mattr_accessor :config
     @@config = {}
@@ -52,10 +54,10 @@ module Netzke
     @@external_ext_css = []
 
     mattr_accessor :icons_uri
-    @@icons_uri = "/assets/icons"
+    @@icons_uri = ASSETS.present? ? "/assets/icons" : "/images/icons"
 
     mattr_accessor :ext_uri
-    @@ext_uri = "/assets"
+    @@ext_uri =  ASSETS.present? ? "/assets" : "/extjs"
 
     mattr_accessor :ext_path
 

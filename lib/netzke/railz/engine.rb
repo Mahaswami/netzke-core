@@ -12,13 +12,15 @@ module Netzke
       config.before_initialize do |app|
         Netzke::Core.config = config.netzke # passing app-level config to Netzke::Core
         Netzke::Core.persistence_manager_class = Netzke::Core.persistence_manager.constantize rescue nil
-        Netzke::Core.ext_path = Rails.root.join('', Netzke::Core.ext_uri[1..-1]) #removed public from here for assets pipeline
+        base_path = Rails.application.config.assets.extjs_assets_enabled.blank? ? '' :'public'
+        Netzke::Core.ext_path = Rails.root.join(base_path, Netzke::Core.ext_uri[1..-1]) #removed public from here for assets pipeline
         Netzke::Core.with_icons = File.exists?("#{::Rails.root}/public#{Netzke::Core.icons_uri}") if Netzke::Core.with_icons.nil?
       end
 
       # after loading initializers
       config.after_initialize do
-        Netzke::Core.ext_path = Rails.root.join('', Netzke::Core.ext_uri[1..-1]) #removed public from here for assets pipeline
+        base_path = Rails.application.config.assets.extjs_assets_enabled.blank? ? '' :'public'
+        Netzke::Core.ext_path = Rails.root.join(base_path, Netzke::Core.ext_uri[1..-1]) #removed public from here for assets pipeline
         Netzke::Core.with_icons = File.exists?("#{::Rails.root}/public#{Netzke::Core.icons_uri}") if Netzke::Core.with_icons.nil?
 
         # Dynamic generation of Netzke js and css.
