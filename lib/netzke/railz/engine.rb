@@ -12,14 +12,14 @@ module Netzke
       config.before_initialize do |app|
         Netzke::Core.config = config.netzke # passing app-level config to Netzke::Core
         Netzke::Core.persistence_manager_class = Netzke::Core.persistence_manager.constantize rescue nil
-        base_path = Rails.application.config.assets.extjs_assets_enabled.blank? ? '' :'public'
+        base_path = $assets_enabled.present? ? '' :'public'
         Netzke::Core.ext_path = Rails.root.join(base_path, Netzke::Core.ext_uri[1..-1]) #removed public from here for assets pipeline
         Netzke::Core.with_icons = File.exists?("#{::Rails.root}/public#{Netzke::Core.icons_uri}") if Netzke::Core.with_icons.nil?
       end
 
       # after loading initializers
       config.after_initialize do
-        base_path = Rails.application.config.assets.extjs_assets_enabled.blank? ? '' :'public'
+        base_path = $assets_enabled.present? ? '' :'public'
         Netzke::Core.ext_path = Rails.root.join(base_path, Netzke::Core.ext_uri[1..-1]) #removed public from here for assets pipeline
         Netzke::Core.with_icons = File.exists?("#{::Rails.root}/public#{Netzke::Core.icons_uri}") if Netzke::Core.with_icons.nil?
 

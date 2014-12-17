@@ -35,7 +35,7 @@ module Netzke
                               'patientslistfilter', 'patientslistbuttons', 'netzkebasepackgridpanel', 'mahaswamigridpanel',
                               'episodeslist', 'episodeslistexplorer', 'netzkebasepacksimpleapp']
 
-        @rendered_classes1 = Rails.application.config.assets.extjs_assets_enabled.blank? ? @rendered_classes1 : []
+        @rendered_classes1 = $assets_enabled.present? ? @rendered_classes1 : []
 
 
         # If we are the first netzke call on the page, reset components hash in the session.
