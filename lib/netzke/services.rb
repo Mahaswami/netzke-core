@@ -63,14 +63,25 @@ module Netzke
 
     end
 
+    def set_comp_session(key, value = nil)
+      @comp_session ||= {}
+      value.nil? ? @comp_session.merge!(key) : @comp_session[key.to_s] = value
+    end
+
+    def component_session
+      @comp_session || {}
+    end
+
     # Invokes endpoint calls
     # +endpoint+ may contain the path to the endpoint in a component down the hierarchy, e.g.:
     #
     #     invoke_endpoint(:users__center__get_data, params)
     def invoke_endpoint(endpoint, params)
       ep_config = self.class.endpoints[endpoint.to_sym]
-
-      if respond_to?("_#{endpoint}_ep_wrapper")
+      if (endpoint.to_s.include?("__") == false and params["componentSession"])
+	set_comp_session(params.delete("componentSession"))
+      end
+     result = if respond_to?("_#{endpoint}_ep_wrapper")
         # we have this endpoint defined
         send("_#{endpoint}_ep_wrapper", params)
       elsif respond_to?(endpoint)
@@ -95,6 +106,16 @@ module Netzke
           component_missing(child_component)
         end
       end
+      if (component_session and endpoint.to_s.include?("__") == false and endpoint.to_s != "deliver_component")
+	if result == "{}"
+	  result = '{"resetComponentSession":'  + component_session.to_s.gsub("=>", ':') + '}'
+        elsif (result.start_with?('{') and result.end_with?('}'))
+	  result = result[0..-2] + ',"resetComponentSession":'  + component_session.to_s.gsub("=>", ':') + '}'
+	else
+	  raise RuntimeError, "Expecting endpoint return Hash({})."
+	end
+      end
+      result 
     end
 
   end

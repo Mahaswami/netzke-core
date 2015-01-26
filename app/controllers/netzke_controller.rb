@@ -107,11 +107,19 @@ class NetzkeController < ApplicationController
 
   protected
     def invoke_endpoint(endpoint_path, action, params, tid) #:nodoc:
-      component_name, *sub_components = endpoint_path.split('__')
-      components_in_session = Netzke::Core.session[:netzke_components]
+      *parent_components, component_name = endpoint_path.split('__')
+	sub_components = []
 
-      if components_in_session
-        component_instance = Netzke::Base.instance_by_config(components_in_session[component_name.to_sym])
+	config = params["componentSession"] || {}
+	config = config.deep_convert_keys{|k| k.to_s.underscore.to_sym}
+	klass = (config[:class_name] || component_name).camelize.constantize
+        raise NameError, "Netzke: Unknown component #{config[:class_name]}" if klass.nil?
+        component_instance = klass.new(config)
+
+     # components_in_session = Netzke::Core.session[:netzke_components]
+     #debug_log components_in_session
+      if true #components_in_session
+        #component_instance = Netzke::Base.instance_by_config(components_in_session[component_name.to_sym])
         result = component_instance.invoke_endpoint((sub_components + [action]).join("__"), params)
       else
         result = {:component_not_in_session => true}.to_nifty_json
