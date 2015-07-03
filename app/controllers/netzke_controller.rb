@@ -112,7 +112,20 @@ class NetzkeController < ApplicationController
 
       if components_in_session
         component_instance = Netzke::Base.instance_by_config(components_in_session[component_name.to_sym])
+        ## Deliver component params resetting for every request ---start
+        old_value = nil
+        if action == 'deliver_component'
+          comp_name = params[:name]
+          old_comp_val = component_instance.components[comp_name.to_sym]
+          old_value = old_comp_val && old_comp_val.dup
+        end
         result = component_instance.invoke_endpoint((sub_components + [action]).join("__"), params)
+        if old_value
+        	comp_name = params[:name]
+          component_instance.components[comp_name.to_sym].clear
+		      component_instance.components[comp_name.to_sym].merge! old_value
+        end
+        ## FIX end
       else
         result = {:component_not_in_session => true}.to_nifty_json
       end
